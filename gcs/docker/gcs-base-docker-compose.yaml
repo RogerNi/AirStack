@@ -42,7 +42,7 @@ services:
     tty: true
     volumes:
       # display stuff
-      - $HOME/.Xauthority:/root/.Xauthority
+      - ${AIRSTACK_XAUTHORITY_FILE:-$HOME/.Xauthority}:/root/.Xauthority
       - /tmp/.X11-unix:/tmp/.X11-unix
       # developer stuff
       - ../../common/.bash_profile:/root/.bash_profile:rw

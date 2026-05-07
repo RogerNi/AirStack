@@ -177,11 +177,14 @@ Isaac Sim container mounts several directories:
 ### Display (X11)
 
 ```yaml
-- $HOME/.Xauthority:/isaac-sim/.Xauthority
+- ${AIRSTACK_XAUTHORITY_FILE:-$HOME/.Xauthority}:/isaac-sim/.Xauthority
 - /tmp/.X11-unix:/tmp/.X11-unix
 ```
 
-Enables GUI display on host.
+The container sets `XAUTHORITY=/isaac-sim/.Xauthority`. For a normal local
+desktop session, `$HOME/.Xauthority` is usually correct. For SSH-forwarded X11,
+set `AIRSTACK_XAUTHORITY_FILE` to the authority file created by SSH if it is not
+`$HOME/.Xauthority`.
 
 ### Isaac Sim Cache & Data
 
@@ -261,6 +264,21 @@ If `DISPLAY` is configured:
 airstack up isaac-sim
 # Isaac Sim GUI opens on host display
 ```
+
+### Via SSH X11 Forwarding
+
+If you SSH into the Docker host and want the GUI stack to display on your laptop,
+use trusted X11 forwarding and the `x11` profile:
+
+```bash
+ssh -Y <user>@<docker-host>
+test -n "$XAUTHORITY" && export AIRSTACK_XAUTHORITY_FILE="$XAUTHORITY"
+airstack up --profile x11
+```
+
+The `x11` profile starts host-networked GUI variants (`robot-desktop-x11`,
+`gcs-x11`, and `isaac-sim-x11`) so SSH-forwarded displays such as
+`localhost:10.0` point at the Docker host's X11 proxy instead of the container.
 
 ### Via tmux Session
 
@@ -383,8 +401,13 @@ docker compose -f simulation/isaac-sim/docker/docker-compose.yaml build --no-cac
 
 **GUI not displaying:**
 
-- Check `DISPLAY`: `echo $DISPLAY` (should be `:0` or `:1`)
-- Allow X11: `xhost +local:docker`
+- Check `DISPLAY`: `echo $DISPLAY` (`:0`/`:1` for local desktop,
+  `localhost:10.0` or similar for SSH X11 forwarding)
+- Local desktop: allow X11 with `xhost +local:docker`
+- SSH forwarding: use `ssh -Y`, verify `xeyes` on the Docker host, then launch
+  `airstack up --profile x11`
+- If SSH set `XAUTHORITY`, pass it through with
+  `export AIRSTACK_XAUTHORITY_FILE="$XAUTHORITY"`
 - Verify X11 socket mounted: Check docker-compose volumes
 
 **ROS 2 topics not visible:**

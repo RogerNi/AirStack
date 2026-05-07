@@ -57,7 +57,7 @@ services:
               capabilities: [ gpu ]
     volumes:
        # display
-      - $HOME/.Xauthority:/isaac-sim/.Xauthority
+      - ${AIRSTACK_XAUTHORITY_FILE:-$HOME/.Xauthority}:/isaac-sim/.Xauthority
       - /tmp/.X11-unix:/tmp/.X11-unix
       # isaac sim stuff
       - $HOME/docker/isaac-sim/cache/main:/isaac-sim/.cache:rw \
@@ -104,3 +104,19 @@ services:
   #   container_name: isaac-sim
   #   network_mode: host
   #   networks: !reset null
+
+  # ===================================================================================================================
+  # GUI mode for SSH X11 forwarding. SSH-forwarded DISPLAY values are usually
+  # localhost:N.0; with Docker bridge networking, localhost is the container, not
+  # the SSH X11 proxy on the Docker host. Host networking keeps localhost scoped
+  # to the Docker host, matching NVIDIA's GUI container guidance.
+  isaac-sim-x11:
+    extends:
+      service: isaac-sim
+    container_name: isaac-sim-x11
+    profiles: !override
+      - x11
+    network_mode: host
+    networks: !reset null
+    environment:
+      - XAUTHORITY=/isaac-sim/.Xauthority

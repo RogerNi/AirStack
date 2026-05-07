@@ -3,15 +3,18 @@
   <!-- ====== ARGS ====== -->
   <arg name="sim" default="true" />
   <arg name="record_bag" default="$(env RECORD_BAGS)" />
+  <arg name="gui" default="$(env GCS_GUI false)" />
 
   <!-- set "onboard_all" or "onboard_local_offboard_global" -->
   <arg name="autonomy_split_type" default="onboard_all" />
 
   <!-- ======== GUI ======== -->
 
-  <?ignore
-  <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share desktop_bringup)/rviz/gcs.rviz --ros-args --log-level INFO" output="screen" respawn="true" respawn_delay="1" />
-    ?>
+  <group if="$(var gui)">
+    <node pkg="rqt_gui" exec="rqt_gui"
+      args="--perspective-file $(find-pkg-share desktop_bringup)/config/gcs.perspective --force-discover"
+      output="screen" respawn="true" respawn_delay="1" />
+  </group>
   <!-- ===================== -->
 
 </launch>

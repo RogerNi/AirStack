@@ -13,6 +13,22 @@ services:
       - 8766:8765 # for Foxglove remote display
 
   # ===================================================================================================================
+  # SSH-forwarded X11 variant for GUI debugging. Host networking lets DISPLAY values
+  # like localhost:10.0 reach the SSH X11 proxy on the Docker host.
+  gcs-x11:
+    profiles: !override
+      - x11
+    extends:
+      file: ./docker-compose.yaml
+      service: gcs
+    network_mode: host
+    networks: !reset null
+    ports: !reset []
+    environment:
+      - GCS_GUI=true
+      - XAUTHORITY=/root/.Xauthority
+
+  # ===================================================================================================================
   # for running on a real world laptop on the local network, set network mode to host
   gcs-real:
     profiles:

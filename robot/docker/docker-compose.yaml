@@ -55,6 +55,22 @@ services:
               capabilities: [gpu]
 
   # ===================================================================================================================
+  # SSH-forwarded X11 variant for GUI debugging. Host networking lets DISPLAY values
+  # like localhost:10.0 reach the SSH X11 proxy on the Docker host.
+  robot-desktop-x11:
+    profiles: !override
+      - x11
+    extends:
+      file: ./docker-compose.yaml
+      service: robot-desktop
+    network_mode: host
+    networks: !reset null
+    ports: !reset []
+    environment:
+      - SIM_IP=${SIM_IP:-127.0.0.1}
+      - XAUTHORITY=/.Xauthority
+
+  # ===================================================================================================================
   # desktop_split: simulates onboard computer on desktop for debugging the split configuration.
   # Same image as robot-desktop; role=onboard means only lite autonomy modules launch.
   # robot-offboard (below) runs concurrently on the same machine with role=offboard.

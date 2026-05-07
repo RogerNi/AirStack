@@ -21,7 +21,7 @@ services:
       - ROBOT_NAME_MAP_CONFIG_FILE=${ROBOT_NAME_MAP_CONFIG_FILE:-default_robot_name_map.yaml}
     volumes:
       # display stuff
-      - $HOME/.Xauthority:/.Xauthority
+      - ${AIRSTACK_XAUTHORITY_FILE:-$HOME/.Xauthority}:/.Xauthority
       - /tmp/.X11-unix:/tmp/.X11-unix
       # developer stuff
       - .dev:/root/.dev:rw # developer config
@@ -38,4 +38,3 @@ services:
       - ../ros_ws:/root/AirStack/robot/ros_ws:rw
       # bags
       - ../bags:/bags:rw
-
