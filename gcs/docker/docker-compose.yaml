@@ -18,6 +18,7 @@ services:
   gcs-x11:
     profiles: !override
       - x11
+      - webrtc
     extends:
       file: ./docker-compose.yaml
       service: gcs

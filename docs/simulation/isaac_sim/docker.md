@@ -298,25 +298,56 @@ tmux a -t isaac
 - `Ctrl-b [` - Scroll mode (arrow keys to scroll logs)
 - `Ctrl-c` - Stop Isaac Sim
 
-### Via Streaming (Headless)
+### Via WebRTC Browser Viewer
 
-For remote access, use Isaac Sim streaming:
+For remote access without installing NVIDIA's native streaming client, use Isaac
+Sim's built-in browser-based WebRTC viewer with the `webrtc` profile:
 
-**Native streaming:**
 ```bash
-# Inside container
-./runheadless.native.sh
+airstack up --profile webrtc isaac-sim-webrtc
 ```
 
-Connect with [Omniverse Streaming Client](https://docs.omniverse.nvidia.com/streaming-client/latest/user-manual.html).
+This starts Isaac Sim in browser-WebRTC mode plus the X11-capable desktop robot
+and GCS services. Isaac Sim streams through the browser; RViz/GCS/controller
+windows still use the existing SSH X11 forwarding path.
 
-**WebRTC streaming:**
-```bash
-# Inside container
-./runheadless.webrtc.sh
+Wait for this line in the Isaac Sim logs or the `isaac` tmux session:
+
+```text
+Isaac Sim Full Streaming App is loaded.
 ```
 
-Access via web browser.
+Then open this URL in a Chromium-based browser:
+
+```text
+http://<docker-host-ip>:8011
+```
+
+For same-host access, use:
+
+```text
+http://127.0.0.1:8011
+```
+
+Open these ports on the Docker host firewall:
+
+| Port | Protocol | Purpose |
+| --- | --- | --- |
+| `8011` | TCP | Browser viewer and livestream service API |
+| `49100` | TCP | WebRTC signaling |
+| `47998` | UDP | WebRTC media stream |
+
+`8211` is the legacy browser-client port used by older Isaac Sim releases; this
+Isaac Sim 5.1 container uses `8011` instead.
+
+For routed or public-IP connections, set the public endpoint before launch:
+
+```bash
+ISAAC_SIM_WEBRTC_PUBLIC_IP=<public-ip> airstack up --profile webrtc isaac-sim-webrtc
+```
+
+Livestreaming requires a GPU with NVENC support and supports only one browser
+client per Isaac Sim instance.
 
 ## Development Workflow
 

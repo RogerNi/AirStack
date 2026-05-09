@@ -120,3 +120,33 @@ services:
     networks: !reset null
     environment:
       - XAUTHORITY=/isaac-sim/.Xauthority
+
+  # ===================================================================================================================
+  # Headless Isaac Sim streaming for the browser-based NVIDIA WebRTC viewer.
+  # NVIDIA's container docs recommend host networking for WebRTC streaming so
+  # the client can reach the signaling and media endpoints directly.
+  isaac-sim-webrtc:
+    extends:
+      service: isaac-sim
+    container_name: isaac-sim-webrtc
+    profiles: !override
+      - webrtc
+    depends_on:
+      - robot-desktop-x11
+      - gcs-x11
+    network_mode: host
+    networks: !reset null
+    command: >
+      bash -lc "
+      tmux new -d -s isaac;
+      WEBRTC_ARGS=\"--/exts/omni.kit.livestream.app/primaryStream/signalPort=${ISAAC_SIM_WEBRTC_SIGNAL_PORT:-49100} --/exts/omni.kit.livestream.app/primaryStream/streamPort=${ISAAC_SIM_WEBRTC_STREAM_PORT:-47998}\";
+      if [ -n \"${ISAAC_SIM_WEBRTC_PUBLIC_IP:-}\" ]; then
+        WEBRTC_ARGS=\"$$WEBRTC_ARGS --/exts/omni.kit.livestream.app/primaryStream/publicIp=${ISAAC_SIM_WEBRTC_PUBLIC_IP:-}\";
+      fi;
+      tmux send-keys -t isaac \"/isaac-sim/runheadless.sh $$WEBRTC_ARGS\" ENTER;
+      sleep infinity"
+    environment:
+      - ISAAC_SIM_HEADLESS=true
+      - ISAAC_SIM_WEBRTC_PUBLIC_IP=${ISAAC_SIM_WEBRTC_PUBLIC_IP:-}
+      - ISAAC_SIM_WEBRTC_SIGNAL_PORT=${ISAAC_SIM_WEBRTC_SIGNAL_PORT:-49100}
+      - ISAAC_SIM_WEBRTC_STREAM_PORT=${ISAAC_SIM_WEBRTC_STREAM_PORT:-47998}
